@@ -1,47 +1,24 @@
-// import { openDb } from './configDB.js';
-import { createTable, insertcliente, updatecliente, selectcliente, selectclientes } from './controler/clientes.js';
-
 import express from 'express';
+import fs from 'fs';
+import https from 'https'
+import cors from 'cors'
+// import { createTable } from './controler/clientes.js';
+
+// createTable();
+
 const app = express();
 app.use(express.json());
+app.use(cors());
 
-createTable();
+import router from './routes.js'
+app.use(router);
 
-app.get('/', function(req, res){
-    res.send('Api rodando');
-});
+app.listen(3000, () => console.log('Api rodando.'))
 
-app.get('/clientes', async function(req, res){
-    let clientes = await selectclientes();
-    res.json(clientes);
-});
+https.createServer({
+    cert:fs.readFileSync('src/SSl/code.crt'),
+    key:fs.readFileSync('src/SSl/code.key')
+},
+    app
+).listen(3001,() => console.log('Rodando um https'));
 
-app.get('/cliente', async function(req, res){
-    let cliente = await selectcliente(req.body.id);
-    res.json(cliente);
-});
-
-app.post('/clientes', function(req, res){
-    insertcliente(req.body);
-    res.json({
-        "statuscode": 200
-    })
-    
-});
-app.put('/clientes', function(req, res){
-    if(req.body && !req.body.id){
-        res.json({
-            "statuscode": "400",
-            "msg":"Você precisa informar um id"
-        })
-    } 
-    
-    else{
-        updatecliente(req.body);
-            res.json({
-                "statuscode": 200
-    })
-}
-   
-});
-app.listen(3001, () => console.log('Api rodando.'))
